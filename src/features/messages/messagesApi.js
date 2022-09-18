@@ -6,6 +6,13 @@ export const messagesApi = apiSlice.injectEndpoints({
         getMessages: builder.query({
             query: (id) =>
                 `/messages?conversationId=${id}&_sort=timestamp&_order=desc&_page=1&_limit=${process.env.REACT_APP_MESSAGES_PER_PAGE}`,
+                transformResponse(apiResponse, meta){
+                    const totalCount = meta.response.headers.get("X-Total-Count");
+                    return {
+                        messages: apiResponse,
+                        totalCount,
+                    };
+                },
                 async onCacheEntryAdded(
                     arg,{updateCachedData,cacheDataLoaded,cacheEntryRemoved}
                 ){
@@ -26,7 +33,7 @@ export const messagesApi = apiSlice.injectEndpoints({
                             // console.log("message data is ",data);
                             updateCachedData((draft) => {
                                 // console.log("cached data",JSON.stringify(draft))
-                                draft.push(data?.data);
+                                draft.messages.push(data?.data);
                             })
                         })
                     } catch (err) {}
@@ -34,6 +41,35 @@ export const messagesApi = apiSlice.injectEndpoints({
                     await cacheEntryRemoved;
                     socket.close();
                 }
+        }),
+        getMoreMessages: builder.query({
+            query:({id,page}) => 
+            `/messages?conversationId=${id}&_sort=timestamp&_order=desc&_page=${page}&_limit=${process.env.REACT_APP_MESSAGES_PER_PAGE}`,
+            async onQueryStarted({id},{queryFulfilled,dispatch}){
+                try {
+                    const messages = await queryFulfilled;
+                    if(messages?.data?.length > 0){
+                        dispatch(
+                            apiSlice.util.updateQueryData(
+                                "getMessages",
+                                id.toString(),
+                                (draft) => {
+                                    return {
+                                        messages:[
+                                            ...draft.messages,
+                                            ...messages?.data
+                                        ],
+                                        totalCount: Number(draft.totalCount)
+                                    }
+                                }
+                            )
+                        )
+                    }
+
+                } catch (err) {
+                    console.log(err.message);
+                }
+            }
         }),
         addMessage: builder.mutation({
             query: (data) => ({
@@ -45,4 +81,4 @@ export const messagesApi = apiSlice.injectEndpoints({
     }),
 });
 
-export const { useGetMessagesQuery, useAddMessageMutation } = messagesApi;
+export const { useGetMessagesQuery, useAddMessageMutation,useGetMoreMessagesQuery } = messagesApi;

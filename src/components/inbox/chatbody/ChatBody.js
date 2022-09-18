@@ -9,7 +9,7 @@ import Options from "./Options";
 export default function ChatBody() {
     const { id } = useParams();
     const {
-        data: messages,
+        data,
         isLoading,
         isError,
         error,
@@ -26,14 +26,14 @@ export default function ChatBody() {
                 <Error message={error?.data} />
             </div>
         );
-    } else if (!isLoading && !isError && messages?.length === 0) {
+    } else if (!isLoading && !isError && data?.messages?.length === 0) {
         content = <div>No messages found!</div>;
-    } else if (!isLoading && !isError && messages?.length > 0) {
+    } else if (!isLoading && !isError && data?.messages?.length > 0) {
         content = (
             <>
-                <ChatHead message={messages[0]} />
-                <Messages messages={messages} />
-                <Options info={messages[0]} />
+                <ChatHead message={data?.messages[0]} />
+                <Messages messages={data?.messages} totalCount={data?.totalCount}/>
+                <Options info={data?.messages[0]} />
             </>
         );
     }
