@@ -4,7 +4,7 @@ import { apiSlice } from "../api/apiSlice";
 export const messagesApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getMessages: builder.query({
-            query: (id) =>
+            query: ({id,email}) =>
                 `/messages?conversationId=${id}&_sort=timestamp&_order=desc&_page=1&_limit=${process.env.REACT_APP_MESSAGES_PER_PAGE}`,
                 transformResponse(apiResponse, meta){
                     const totalCount = meta.response.headers.get("X-Total-Count");
@@ -17,7 +17,7 @@ export const messagesApi = apiSlice.injectEndpoints({
                     arg,{updateCachedData,cacheDataLoaded,cacheEntryRemoved}
                 ){
                     // create socket
-                    const socket = io("http://localhost:9000", {
+                    const socket = io(process.env.REACT_APP_API_URL, {
                         reconnectionDelay: 1000,
                         reconnection: true,
                         reconnectionAttemps: 10,
@@ -30,11 +30,20 @@ export const messagesApi = apiSlice.injectEndpoints({
                     try {
                         await cacheDataLoaded;
                         socket.on("message",(data) => {
-                            // console.log("message data is ",data);
-                            updateCachedData((draft) => {
-                                // console.log("cached data",JSON.stringify(draft))
-                                draft.messages.push(data?.data);
-                            })
+                            const{sender,receiver} = data?.data;
+
+                            if((arg?.email === sender?.email) || (arg?.email === receiver?.email)){
+                                updateCachedData((draft) => {
+                                    const message = draft.messages.find(
+                                        m => m.conversationId == data?.data?.conversationId
+                                    )
+                                    message.message = data?.data?.message;
+                                    message.timestamp = data?.data?.timestamp;
+                                    // console.log("message cached data",JSON.stringify(draft));
+                                    // draft.messages.push(data?.data);
+                                })
+                            }
+
                         })
                     } catch (err) {}
 

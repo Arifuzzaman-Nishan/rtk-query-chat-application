@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
     conversationsApi,
     useAddConversationMutation,
-    useEditConversationMutation,
+    useEditConversationMutation
 } from "../../features/conversations/conversationsApi";
 import { useGetUserQuery } from "../../features/users/usersApi";
 import isValidEmail from "../../utils/isValidEmail";
@@ -35,7 +35,7 @@ export default function Modal({ open, control }) {
                 conversationsApi.endpoints.getConversation.initiate({
                     userEmail: myEmail,
                     participantEmail: to,
-                })
+                },{forceRefetch:true})
             )
                 .unwrap()
                 .then((data) => {
@@ -102,6 +102,10 @@ export default function Modal({ open, control }) {
                 },
             });
         }
+
+        setMessage("");
+            setTo("");
+        
     };
 
     return (

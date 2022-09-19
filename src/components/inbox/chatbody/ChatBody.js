@@ -1,4 +1,5 @@
 // import Blank from "./Blank";
+import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useGetMessagesQuery } from "../../../features/messages/messagesApi";
 import Error from "../../ui/Error";
@@ -8,12 +9,14 @@ import Options from "./Options";
 
 export default function ChatBody() {
     const { id } = useParams();
+    const {user} = useSelector(state => state.auth);
+
     const {
         data,
         isLoading,
         isError,
         error,
-    } = useGetMessagesQuery(id);
+    } = useGetMessagesQuery({id,email: user?.email});
 
     // decide what to render
     let content = null;

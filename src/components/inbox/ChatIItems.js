@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
     conversationsApi,
-    useGetConversationsQuery,
+    useGetConversationsQuery
 } from "../../features/conversations/conversationsApi";
 import getPartnerInfo from "../../utils/getPartnerInfo";
 import Error from "../ui/Error";
