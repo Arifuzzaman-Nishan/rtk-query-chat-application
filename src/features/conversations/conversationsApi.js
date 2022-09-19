@@ -145,6 +145,8 @@ export const conversationsApi = apiSlice.injectEndpoints({
                 body: data,
             }),
             async onQueryStarted(arg, { queryFulfilled, dispatch }) {
+                // console.log(arg);
+                // console.log("editing...",arg?.sender);
                 // optimistic cache update start
                 const pathResult = dispatch(
                     apiSlice.util.updateQueryData(
@@ -183,16 +185,19 @@ export const conversationsApi = apiSlice.injectEndpoints({
                             })
                         ).unwrap();
 
+                        // console.log("response is ",res);
+
                         // update messages cache pessimistically start
-                            dispatch(
-                                apiSlice.util.updateQueryData(
-                                    "getMessages",
-                                    res.conversationId.toString(),
-                                    (draft) => {
-                                        draft.push(res);
-                                    }
-                                )
-                            );
+                            // dispatch(
+                            //     apiSlice.util.updateQueryData(
+                            //         "getMessages",
+                            //         {id: res.conversationId.toString(),email:arg?.sender},
+                            //         (draft) => {
+                            //             // console.log("message ",JSON.stringify(draft));
+                            //             draft?.messages?.push(res);
+                            //         }
+                            //     )
+                            // );
                         // update messages cache pessimistically end
                     
                     }
