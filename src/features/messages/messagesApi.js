@@ -4,7 +4,7 @@ import { apiSlice } from "../api/apiSlice";
 export const messagesApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getMessages: builder.query({
-            query: ({id,email}) =>
+            query: ({id}) =>
                 `/messages?conversationId=${id}&_sort=timestamp&_order=desc&_page=1&_limit=${process.env.REACT_APP_MESSAGES_PER_PAGE}`,
                 transformResponse(apiResponse, meta){
                     const totalCount = meta.response.headers.get("X-Total-Count");
@@ -56,7 +56,7 @@ export const messagesApi = apiSlice.injectEndpoints({
                         dispatch(
                             apiSlice.util.updateQueryData(
                                 "getMessages",
-                                id.toString(),
+                                {id:id.toString()},
                                 (draft) => {
                                     return {
                                         messages:[

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -6,7 +6,7 @@ import { messagesApi } from "../../../features/messages/messagesApi";
 import Message from "./Message";
 
 export default function Messages({ messages = [],totalCount }) {
-
+    const messagesEndRef = useRef(null)
     const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth) || {};
     const { email } = user || {};
@@ -16,8 +16,19 @@ export default function Messages({ messages = [],totalCount }) {
     const [hasMore,setHasMore] = useState(true);
 
     const fetchMore = () => {
+        console.log("fetch more...");
         setPage(prev => prev+1);
     }
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollTo({top: window.innerHeight-197, 
+            behavior: 'smooth'})
+      }
+    
+      useEffect(() => {
+        scrollToBottom();
+        setPage(1);
+      },[id]);
 
     useEffect(() => {
         if(page > 1){
@@ -25,10 +36,10 @@ export default function Messages({ messages = [],totalCount }) {
                 messagesApi.endpoints.getMoreMessages.initiate({
                     id,
                     page
-                })
+                },{forceRefetch:true})
            ) 
         }
-    },[dispatch, id, page])
+    },[dispatch, page])
 
     useEffect(() => {
         if(totalCount > 0){
@@ -43,7 +54,8 @@ export default function Messages({ messages = [],totalCount }) {
 
     
     return (
-        <div id="scrollableDiv" className="relative w-full h-[calc(100vh_-_197px)] p-6 overflow-y-auto flex flex-col-reverse">
+        <div id="scrollableDiv" className="relative w-full h-[calc(100vh_-_197px)] p-6 overflow-y-auto flex flex-col-reverse" ref={messagesEndRef}>
+
             <InfiniteScroll
                 dataLength={messages.length}
                 next={fetchMore}
